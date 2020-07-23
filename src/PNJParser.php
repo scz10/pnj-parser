@@ -96,37 +96,40 @@ class PNJParser {
         curl_setopt( $this->curlHandle, CURLOPT_POSTFIELDS, $params );
         $this->exec();
 
-        curl_setopt( $this->curlHandle, CURLOPT_URL, $this->_siteTargets['loginUrl'] );
-		$this->curlSetGet();
-        $html = $this->exec();
-        echo $html;
+        
 		$this->isLoggedIn = true;
     }
 
-    public function getNilai(){
+    public function getDataMahasiswa(){
         if( !$this->isLoggedIn ) $this->login( $this->username, $this->password );
 
-        $this->curlSetGet();
-        curl_setopt( $this->curlHandle, CURLOPT_URL, $this->_siteTargets['nilaiUrl'] );
-        curl_setopt( $this->curlHandle, CURLOPT_REFERER, $this->_siteTargets['loginUrl'] );
-        
-        $html = $this->exec();
-        return $this->getNilaiTable($html);
+        curl_setopt( $this->curlHandle, CURLOPT_URL, $this->_siteTargets['loginUrl'] );
 
+        $this->curlSetGet();
+        
+        $result = $this->exec();
+        $result = $this->getParseDataMahasiswa($result);
+
+        return $result;
     }
 
-    private function getNilaiTable($html){
+    private function getParseDataMahasiswa($html){
         $dom = new DOMDocument();
-        if ( PARSER_DEBUG ) {
+
+		if ( PARSER_DEBUG ) {
 			$dom->loadHTML($html);	
 		} else {
 			@$dom->loadHTML($html);	
         }
         
-        $table = $dom->getElementsByTagName('tbody')->item(0);
-        return $dom->saveHTML($table);
+        $xpath = new DOMXPath($dom);
+
+        $data = [];
+        for ($i=1; $i <= 10; $i++) { 
+            array_push($data, $xpath->query('//*[@id="artikel_tengah"]/div[2]/text()['.$i.']')->item(0)->nodeValue);
+        }
         
+        return $data;
     }
 
-    
 }
