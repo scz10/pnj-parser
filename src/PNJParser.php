@@ -2,7 +2,8 @@
 
 define('PARSER_DEBUG', false);
 
-class PNJParser {
+class PNJParser
+{
     private $username;
     private $password;
 
@@ -10,7 +11,8 @@ class PNJParser {
     public $_siteTargets = [
         'loginUrl' => 'https://old.pnj.ac.id/mahasiswa.html',
         'nilaiUrl' => 'https://old.pnj.ac.id/mahasiswa/nilai.html',
-        'kompenUrl' => 'https://old.pnj.ac.id/mahasiswa/kompen.html'
+        'kompenUrl' => 'https://old.pnj.ac.id/mahasiswa/kompen.html',
+        'logoutUrl' => 'https://old.pnj.ac.id/mahasiswa/logout.html'
     ];
 
     protected $isLoggedIn = false;
@@ -28,108 +30,216 @@ class PNJParser {
     );
 
     public function __construct($username, $password)
-	{
-		if( PARSER_DEBUG == true ) error_reporting(E_ALL);
-		$this->username = $username;
-		$this->password = $password;
-		$this->curlHandle = curl_init();
-		$this->setupCurl();
-		$this->login($this->username, $this->password);
+    {
+        if (PARSER_DEBUG == true) error_reporting(E_ALL);
+        $this->username = $username;
+        $this->password = $password;
+        $this->curlHandle = curl_init();
+        $this->setupCurl();
+        $this->login($this->username, $this->password);
     }
 
     public function exec()
-	{
-		$result = curl_exec($this->curlHandle);
-		if( PARSER_DEBUG == true ) {
-			$http_code = curl_getinfo($this->curlHandle, CURLINFO_HTTP_CODE);
-			print_r($result);
+    {
+        $result = curl_exec($this->curlHandle);
+        if (PARSER_DEBUG == true) {
+            $http_code = curl_getinfo($this->curlHandle, CURLINFO_HTTP_CODE);
+            print_r($result);
 
-			if($http_code != 200) {
-				echo 'Something went wrong, not return 200';
-				exit;
-			}
-
-		}
-		return $result;
+            if ($http_code != 200) {
+                echo 'Something went wrong, not return 200';
+                exit;
+            }
+        }
+        return $result;
     }
-    
+
     protected function setupCurl()
-	{
-		curl_setopt( $this->curlHandle, CURLOPT_URL, $this->_siteTargets['loginUrl'] );
-		curl_setopt( $this->curlHandle, CURLOPT_POST, 0 );
-		curl_setopt( $this->curlHandle, CURLOPT_HTTPGET, 1 );
-		curl_setopt( $this->curlHandle, CURLOPT_HTTPHEADER, $this->_defaultHeaders);
-		curl_setopt( $this->curlHandle, CURLOPT_SSL_VERIFYPEER, false );
-		curl_setopt( $this->curlHandle, CURLOPT_RETURNTRANSFER, true );
-		curl_setopt( $this->curlHandle, CURLOPT_COOKIEFILE,'cookie' );
-		curl_setopt( $this->curlHandle, CURLOPT_COOKIEJAR, 'cookiejar' );
+    {
+        curl_setopt($this->curlHandle, CURLOPT_URL, $this->_siteTargets['loginUrl']);
+        curl_setopt($this->curlHandle, CURLOPT_POST, 0);
+        curl_setopt($this->curlHandle, CURLOPT_HTTPGET, 1);
+        curl_setopt($this->curlHandle, CURLOPT_HTTPHEADER, $this->_defaultHeaders);
+        curl_setopt($this->curlHandle, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($this->curlHandle, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($this->curlHandle, CURLOPT_COOKIEFILE, 'cookie');
+        curl_setopt($this->curlHandle, CURLOPT_COOKIEJAR, 'cookiejar');
     }
-    
+
     protected function curlSetGet()
-	{
-		curl_setopt( $this->curlHandle, CURLOPT_POST, 0 );
-		curl_setopt( $this->curlHandle, CURLOPT_HTTPGET, 1 );
+    {
+        curl_setopt($this->curlHandle, CURLOPT_POST, 0);
+        curl_setopt($this->curlHandle, CURLOPT_HTTPGET, 1);
     }
-    
+
     protected function curlSetPost()
-	{
-		curl_setopt( $this->curlHandle, CURLOPT_POST, 1 );
-		curl_setopt( $this->curlHandle, CURLOPT_HTTPGET, 0 );
+    {
+        curl_setopt($this->curlHandle, CURLOPT_POST, 1);
+        curl_setopt($this->curlHandle, CURLOPT_HTTPGET, 0);
     }
-    
-    private function login($username, $password){
+
+    private function login($username, $password)
+    {
         //Just to Get Cookies
-		curl_setopt( $this->curlHandle, CURLOPT_URL, $this->_siteTargets['loginUrl'] );
-		$this->curlSetGet();
+        curl_setopt($this->curlHandle, CURLOPT_URL, $this->_siteTargets['loginUrl']);
+        $this->curlSetGet();
         $this->exec();
-        
+
         //Sending login Info
         $params = array(
-			"username={$username}",
-			"password={$password}",
-			'submit=Login'
+            "username={$username}",
+            "password={$password}",
+            'submit=Login'
         );
-        $params = implode( '&', $params );
+        $params = implode('&', $params);
         $this->curlSetPost();
-        curl_setopt( $this->curlHandle, CURLOPT_URL, $this->_siteTargets['loginUrl'] );
-		curl_setopt( $this->curlHandle, CURLOPT_REFERER, $this->_siteTargets['loginUrl'] );
-        curl_setopt( $this->curlHandle, CURLOPT_POSTFIELDS, $params );
+        curl_setopt($this->curlHandle, CURLOPT_URL, $this->_siteTargets['loginUrl']);
+        curl_setopt($this->curlHandle, CURLOPT_REFERER, $this->_siteTargets['loginUrl']);
+        curl_setopt($this->curlHandle, CURLOPT_POSTFIELDS, $params);
         $this->exec();
 
-        
-		$this->isLoggedIn = true;
+
+        $this->isLoggedIn = true;
     }
 
-    public function getDataMahasiswa(){
-        if( !$this->isLoggedIn ) $this->login( $this->username, $this->password );
+    public function getDataMahasiswa()
+    {
+        if (!$this->isLoggedIn) $this->login($this->username, $this->password);
 
-        curl_setopt( $this->curlHandle, CURLOPT_URL, $this->_siteTargets['loginUrl'] );
+        curl_setopt($this->curlHandle, CURLOPT_URL, $this->_siteTargets['loginUrl']);
 
         $this->curlSetGet();
-        
+
         $result = $this->exec();
         $result = $this->getParseDataMahasiswa($result);
 
         return $result;
     }
 
-    private function getParseDataMahasiswa($html){
+    private function getParseDataMahasiswa($html)
+    {
         $dom = new DOMDocument();
 
-		if ( PARSER_DEBUG ) {
-			$dom->loadHTML($html);	
-		} else {
-			@$dom->loadHTML($html);	
+        if (PARSER_DEBUG) {
+            $dom->loadHTML($html);
+        } else {
+            @$dom->loadHTML($html);
         }
-        
+
         $xpath = new DOMXPath($dom);
 
         $data = [];
-        for ($i=1; $i <= 10; $i++) { 
-            array_push($data, $xpath->query('//*[@id="artikel_tengah"]/div[2]/text()['.$i.']')->item(0)->nodeValue);
+        for ($i = 1; $i <= 10; $i++) {
+            array_push($data, $xpath->query('//*[@id="artikel_tengah"]/div[2]/text()[' . $i . ']')->item(0)->nodeValue);
         }
-        
+
         return $data;
     }
 
+    public function getKompenMahasiswa()
+    {
+        if (!$this->isLoggedIn) $this->login($this->username, $this->password);
+
+        curl_setopt($this->curlHandle, CURLOPT_URL, $this->_siteTargets['kompenUrl']);
+
+        $this->curlSetGet();
+
+        $result = $this->exec();
+        $result = $this->getParseKompenMahasiswa($result);
+
+        return $result;
+    }
+
+    private function getParseKompenMahasiswa($html)
+    {
+        $dom = new DOMDocument();
+
+        if (PARSER_DEBUG) {
+            $dom->loadHTML($html);
+        } else {
+            @$dom->loadHTML($html);
+        }
+
+        $xpath = new DOMXPath($dom);
+
+        $data = [];
+        for ($i = 3; $i <= 6; $i++) {
+            array_push($data, $xpath->query('//*[@id="artikel_tengah"]/div[2]/table/tbody/tr/td[' . $i . ']')->item(0)->nodeValue);
+        }
+
+        return $data;
+    }
+
+    public function getNilaiMahasiswa()
+    {
+        if (!$this->isLoggedIn) $this->login($this->username, $this->password);
+
+        curl_setopt($this->curlHandle, CURLOPT_URL, $this->_siteTargets['nilaiUrl']);
+
+        $this->curlSetGet();
+
+        $result = $this->exec();
+        $result = $this->getParseNilaiMahasiswa($result);
+
+        return $result;
+    }
+
+    private function getParseNilaiMahasiswa($html)
+    {
+        $dom = new DOMDocument();
+
+        if (PARSER_DEBUG) {
+            $dom->loadHTML($html);
+        } else {
+            @$dom->loadHTML($html);
+        }
+
+        $xpath = new DOMXPath($dom);
+
+        $rows = $xpath->query('//*[@id="artikel_tengah"]/div[2]/table/tbody/tr');
+        $previousValue = null;
+        $semesters = [];
+        $semester = [];
+        $length = $rows->length+1;
+        $count = 1;
+        foreach ($rows as $row) {
+            $cells = $row->getElementsByTagName('td');
+            $cellData = [];
+            foreach ($cells as $cell) {
+                $cellData[] = $cell->nodeValue;
+            }
+            if ($previousValue == null){
+                $count++;
+                array_push($semester, $cellData);
+                $previousValue = $cellData;
+                
+            }
+            else {
+                if ($cellData[3] != $previousValue[3]){
+                    $count++;
+                    array_push($semesters, $semester);
+                    $semester = [];
+                    array_push($semester, $cellData);
+                    $previousValue = null;
+                } else {
+                    $count++;
+                    array_push($semester, $cellData);
+                    $previousValue = $cellData;
+                    if ($count == $length){
+                        array_push($semesters, $semester);
+                    }
+                }    
+            }
+            
+        }
+        return $semesters;
+    }
+
+    public function getLogout(){
+        curl_setopt($this->curlHandle, CURLOPT_URL, $this->_siteTargets['logoutUrl']);
+
+        $this->curlSetGet();
+
+        $this->exec();
+    }
 }
