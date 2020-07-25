@@ -244,6 +244,34 @@ class PNJParser
         }
         return $semesters;
     }
+
+    public function getIPMahasiswa(){
+        $nilai = $this->getNilaiMahasiswa();
+        $ip_mahasiswa = [];
+        foreach($nilai as $x){
+            $nxk = 0;
+            $kredit = 0;
+            foreach($x as $y){
+                $nxk += $y[6];
+                $kredit += $y[5];
+            }
+        array_push($ip_mahasiswa, [$nxk, $kredit, number_format((float)$nxk/$kredit,2,'.','')]);
+        }
+        return $ip_mahasiswa;
+    }
+
+    public function getIPKMahasiswa(){
+        $nilai[] = $this->getIPMahasiswa();
+        $nxk = 0;
+        $kredit = 0;
+        foreach($nilai as $x){
+            foreach($x as $y){
+                $nxk += $y[0];
+                $kredit += $y[1];
+            }
+        }
+        return [$nxk, $kredit,number_format((float)$nxk/$kredit,2,'.','')];
+    }
     public function getLogout()
     {
         curl_setopt($this->curlHandle, CURLOPT_URL, $this->_siteTargets['logoutUrl']);
