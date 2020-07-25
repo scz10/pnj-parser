@@ -247,7 +247,6 @@ class PNJParser
 
     public function getIPMahasiswa(){
         $nilai = $this->getNilaiMahasiswa();
-        $ip_mahasiswa = [];
         foreach($nilai as $key => $x){
             $nxk = 0;
             $kredit = 0;
