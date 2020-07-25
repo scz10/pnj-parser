@@ -224,7 +224,7 @@ class PNJParser
             if ($previousValue) {
                 if ($x[3] != $previousValue[3]) {
                     $count++;
-                    array_push($semesters, $temp);
+                    $semesters[$temp[0][2] ." ". $temp[0][3]] = $temp;
                     $temp = [];
                     array_push($temp, $x);
                     $previousValue = $x;
@@ -233,7 +233,7 @@ class PNJParser
                     array_push($temp, $x);
                     $previousValue = $x;
                     if ($count == $length) {
-                        array_push($semesters, $temp);
+                        $semesters[$temp[0][2] ." ". $temp[0][3]] = $temp;;
                     }
                 }
             } else {
