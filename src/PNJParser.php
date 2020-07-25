@@ -248,14 +248,14 @@ class PNJParser
     public function getIPMahasiswa(){
         $nilai = $this->getNilaiMahasiswa();
         $ip_mahasiswa = [];
-        foreach($nilai as $x){
+        foreach($nilai as $key => $x){
             $nxk = 0;
             $kredit = 0;
             foreach($x as $y){
                 $nxk += $y[6];
                 $kredit += $y[5];
             }
-        array_push($ip_mahasiswa, [$nxk, $kredit, number_format((float)$nxk/$kredit,2,'.','')]);
+        $ip_mahasiswa[$key] = [$nxk, $kredit, number_format((float)$nxk/$kredit,2,'.','')];
         }
         return $ip_mahasiswa;
     }
