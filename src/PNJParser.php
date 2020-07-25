@@ -180,6 +180,7 @@ class PNJParser
 
         $result = $this->exec();
         $result = $this->getParseNilaiMahasiswa($result);
+        $result = $this->splitIntoSemester($result);
 
         return $result;
     }
@@ -197,45 +198,54 @@ class PNJParser
         $xpath = new DOMXPath($dom);
 
         $rows = $xpath->query('//*[@id="artikel_tengah"]/div[2]/table/tbody/tr');
-        $previousValue = null;
-        $semesters = [];
-        $semester = [];
-        $length = $rows->length+1;
-        $count = 1;
+        $nilai = [];
         foreach ($rows as $row) {
             $cells = $row->getElementsByTagName('td');
             $cellData = [];
             foreach ($cells as $cell) {
                 $cellData[] = $cell->nodeValue;
             }
-            if ($previousValue == null){
-                $count++;
-                array_push($semester, $cellData);
-                $previousValue = $cellData;
-                
-            }
-            else {
-                if ($cellData[3] != $previousValue[3]){
+            array_push($nilai, $cellData); 
+        }
+        array_multisort(array_column($nilai, 2), SORT_ASC, array_column($nilai, 3), SORT_ASC, $nilai);
+
+        return $nilai;
+    }
+
+    private function splitIntoSemester($data)
+    {
+        $semesters = [];
+        $temp = [];
+        $count = 1;
+        $length = count($data) + 1;
+        $previousValue = null;
+
+        foreach ($data as $x) {
+            if ($previousValue) {
+                if ($x[3] != $previousValue[3]) {
                     $count++;
-                    array_push($semesters, $semester);
-                    $semester = [];
-                    array_push($semester, $cellData);
-                    $previousValue = null;
+                    array_push($semesters, $temp);
+                    $temp = [];
+                    array_push($temp, $x);
+                    $previousValue = $x;
                 } else {
                     $count++;
-                    array_push($semester, $cellData);
-                    $previousValue = $cellData;
-                    if ($count == $length){
-                        array_push($semesters, $semester);
+                    array_push($temp, $x);
+                    $previousValue = $x;
+                    if ($count == $length) {
+                        array_push($semesters, $temp);
                     }
-                }    
+                }
+            } else {
+                $count++;
+                array_push($temp, $x);
+                $previousValue = $x;
             }
-            
         }
         return $semesters;
     }
-
-    public function getLogout(){
+    public function getLogout()
+    {
         curl_setopt($this->curlHandle, CURLOPT_URL, $this->_siteTargets['logoutUrl']);
 
         $this->curlSetGet();

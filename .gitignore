@@ -2,3 +2,5 @@ test.php
 cookiejar
 .vscode/
 test2.php
+src/test3.php
+.gitignore
