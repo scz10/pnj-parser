@@ -120,9 +120,9 @@ class PNJParser
 
         $xpath = new DOMXPath($dom);
         if ($xpath->query('//*[@id="message"]/ul/li')->length == 0){
-            return false;
-        } else {
             return true;
+        } else {
+            return false;
         }
         
     }
