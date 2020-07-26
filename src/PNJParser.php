@@ -15,7 +15,7 @@ class PNJParser
         'logoutUrl' => 'https://old.pnj.ac.id/mahasiswa/logout.html'
     ];
 
-    protected $isLoggedIn = false;
+    public $isLoggedIn = false;
 
     public $_defaultHeaders = array(
         'POST /mahasiswa.html HTTP/1.1',
@@ -98,10 +98,34 @@ class PNJParser
         curl_setopt($this->curlHandle, CURLOPT_POSTFIELDS, $params);
         $this->exec();
 
+        curl_setopt($this->curlHandle, CURLOPT_URL, $this->_siteTargets['loginUrl']);
 
-        $this->isLoggedIn = true;
+        $this->curlSetGet();
+
+        $result = $this->exec();
+        $result = $this->checkLogin($result);
+
+        $this->isLoggedIn = $result;
     }
 
+    private function checkLogin($html){
+        
+        $dom = new DOMDocument();
+        libxml_use_internal_errors(true);
+        if (PARSER_DEBUG) {
+            $dom->loadHTML($html);
+        } else {
+            @$dom->loadHTML($html);
+        }
+
+        $xpath = new DOMXPath($dom);
+        if ($xpath->query('//*[@id="message"]/ul/li')->length == 0){
+            return false;
+        } else {
+            return true;
+        }
+        
+    }
     public function getDataMahasiswa()
     {
         if (!$this->isLoggedIn) $this->login($this->username, $this->password);
