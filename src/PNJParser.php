@@ -153,8 +153,8 @@ class PNJParser
         $xpath = new DOMXPath($dom);
 
         $data = [];
-        for ($i = 1; $i <= 10; $i++) {
-            array_push($data, $xpath->query('//*[@id="artikel_tengah"]/div[2]/text()[' . $i . ']')->item(0)->nodeValue);
+        foreach($xpath->query('//*[@id="artikel_tengah"]/div[2]/text()') as $a){
+            array_push($data, $a->nodeValue);
         }
 
         return $data;
