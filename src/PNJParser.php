@@ -1,5 +1,15 @@
 <?php
 
+/**
+ * Login request for PNJ Academic Portal
+ *
+ *
+ * @author     scz10 <cahyamulyadi@outlook.com>
+ * @copyright  2020 scz10
+ * @version    0.1
+ */
+
+
 define('PARSER_DEBUG', false);
 
 class PNJParser
@@ -29,6 +39,14 @@ class PNJParser
         'Accept-Language: en-US,en;q=0.9,id;q=0.8'
     );
 
+    /**
+	* The Constructor
+	* this class will make login request to PNJ Academic portal
+	*
+	* @param string $username
+	* @param string $password
+	*/
+
     public function __construct($username, $password)
     {
         if (PARSER_DEBUG == true) error_reporting(E_ALL);
@@ -39,6 +57,11 @@ class PNJParser
         $this->login($this->username, $this->password);
     }
 
+    /**
+	* Execute the CURL and return result
+	*
+	* @return curl result
+	*/
     public function exec()
     {
         $result = curl_exec($this->curlHandle);
@@ -54,6 +77,9 @@ class PNJParser
         return $result;
     }
 
+    /**
+	* Register default CURL parameters
+	*/
     protected function setupCurl()
     {
         curl_setopt($this->curlHandle, CURLOPT_URL, $this->_siteTargets['loginUrl']);
@@ -65,19 +91,27 @@ class PNJParser
         curl_setopt($this->curlHandle, CURLOPT_COOKIEFILE, 'cookie');
         curl_setopt($this->curlHandle, CURLOPT_COOKIEJAR, 'cookiejar');
     }
-
+    /**
+     * Set curl method to Get
+     */
     protected function curlSetGet()
     {
         curl_setopt($this->curlHandle, CURLOPT_POST, 0);
         curl_setopt($this->curlHandle, CURLOPT_HTTPGET, 1);
     }
 
+    /**
+     * Set curl method to Post
+     */
     protected function curlSetPost()
     {
         curl_setopt($this->curlHandle, CURLOPT_POST, 1);
         curl_setopt($this->curlHandle, CURLOPT_HTTPGET, 0);
     }
 
+    /**
+     * Login to PNJ academic portal.
+     */
     private function login($username, $password)
     {
         //Just to Get Cookies
@@ -108,6 +142,12 @@ class PNJParser
         $this->isLoggedIn = $result;
     }
 
+    /**
+     * To check login status
+     * 
+     * @param login result $html
+     * @return boolean
+     */
     private function checkLogin($html){
         
         $dom = new DOMDocument();
@@ -126,6 +166,11 @@ class PNJParser
         }
         
     }
+    /**
+     * function to navigate to biodata url
+     * 
+     * @return array
+     */
     public function getDataMahasiswa()
     {
         if (!$this->isLoggedIn) $this->login($this->username, $this->password);
@@ -140,6 +185,12 @@ class PNJParser
         return $result;
     }
 
+    /**
+     * function to scrape student data
+     * 
+     * @param string from element navigate url $html
+     * @return array
+     */
     private function getParseDataMahasiswa($html)
     {
         $dom = new DOMDocument();
@@ -160,6 +211,11 @@ class PNJParser
         return $data;
     }
 
+    /**
+     * function to navigate data to kompen url
+     * 
+     * @return string element page kompen url
+     */
     public function getKompenMahasiswa()
     {
         if (!$this->isLoggedIn) $this->login($this->username, $this->password);
@@ -174,6 +230,12 @@ class PNJParser
         return $result;
     }
 
+    /**
+     * function to scrape data from kompen url
+     * 
+     * @param string $html
+     * @return array
+     */
     private function getParseKompenMahasiswa($html)
     {
         $dom = new DOMDocument();
@@ -193,6 +255,11 @@ class PNJParser
 
         return $data;
     }
+    /**
+     * function to navigate to nilai url
+     * 
+     * @return array
+     */
 
     public function getNilaiMahasiswa()
     {
@@ -209,6 +276,12 @@ class PNJParser
         return $result;
     }
 
+    /**
+     * function to scrape nilai element
+     * 
+     * @param string $html
+     * @return array
+     */
     private function getParseNilaiMahasiswa($html)
     {
         $dom = new DOMDocument();
@@ -236,6 +309,12 @@ class PNJParser
         return $nilai;
     }
 
+    /**
+     * function to split nilai into semester
+     * 
+     * @param array result from scrape nilai
+     * @return array
+     */
     private function splitIntoSemester($data)
     {
         $semesters = [];
@@ -269,6 +348,11 @@ class PNJParser
         return $semesters;
     }
 
+    /**
+     * function to get IP student for each semester
+     * 
+     * @return array
+     */
     public function getIPMahasiswa(){
         $nilai = $this->getNilaiMahasiswa();
         foreach($nilai as $key => $x){
@@ -283,6 +367,10 @@ class PNJParser
         return $ip_mahasiswa;
     }
 
+    /**
+     * function to get IPK from mahasiswa
+     * @return array
+     */
     public function getIPKMahasiswa(){
         $nilai[] = $this->getIPMahasiswa();
         $nxk = 0;
@@ -295,6 +383,10 @@ class PNJParser
         }
         return [$nxk, $kredit,number_format((float)$nxk/$kredit,2,'.','')];
     }
+
+    /**
+     * function to logout from PNJ academic portal
+     */
     public function getLogout()
     {
         curl_setopt($this->curlHandle, CURLOPT_URL, $this->_siteTargets['logoutUrl']);
