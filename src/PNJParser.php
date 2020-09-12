@@ -302,6 +302,9 @@ class PNJParser
             foreach ($cells as $cell) {
                 $cellData[] = $cell->nodeValue;
             }
+            if ($cellData[4] == "") {
+                continue;
+            }
             array_push($nilai, $cellData); 
         }
         array_multisort(array_column($nilai, 2), SORT_ASC, array_column($nilai, 3), SORT_ASC, $nilai);
