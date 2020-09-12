@@ -250,7 +250,8 @@ class PNJParser
 
         $data = [];
         for ($i = 3; $i <= 6; $i++) {
-            array_push($data, $xpath->query('//*[@id="artikel_tengah"]/div[2]/table/tbody/tr/td[' . $i . ']')->item(0)->nodeValue);
+            $kompenValue = $xpath->query('//*[@id="artikel_tengah"]/div[2]/table/tbody/tr/td[' . $i . ']')->item(0)->nodeValue;
+            array_push($data, ($kompenValue == "") ? "0" : $kompenValue);
         }
 
         return $data;
