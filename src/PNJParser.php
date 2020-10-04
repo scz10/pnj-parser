@@ -362,11 +362,13 @@ class PNJParser
         foreach($nilai as $key => $x){
             $nxk = 0;
             $kredit = 0;
+            $matkul_hash = "";
             foreach($x as $y){
                 $nxk += $y[6];
                 $kredit += $y[5];
+                $matkul_hash .= $y[1]; 
             }
-        $ip_mahasiswa[$key] = [$nxk, $kredit, number_format((float)$nxk/$kredit,2,'.','')];
+            $ip_mahasiswa[$key] = [number_format((float)$nxk,2,'.',''), $kredit, number_format((float)$nxk/$kredit,2,'.',''), md5($matkul_hash)];
         }
         return $ip_mahasiswa;
     }
@@ -385,7 +387,7 @@ class PNJParser
                 $kredit += $y[1];
             }
         }
-        return [$nxk, $kredit,number_format((float)$nxk/$kredit,2,'.','')];
+        return [number_format((float)$nxk,2,'.',''), $kredit,number_format((float)$nxk/$kredit,2,'.','')];
     }
 
     /**
