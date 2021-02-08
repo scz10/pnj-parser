@@ -308,6 +308,7 @@ class PNJParser
             }
             array_push($nilai, $cellData); 
         }
+        echo json_encode($nilai);
         array_multisort(array_column($nilai, 2), SORT_ASC, array_column($nilai, 3), SORT_ASC, $nilai);
 
         return $nilai;
@@ -335,6 +336,9 @@ class PNJParser
                     $temp = [];
                     array_push($temp, $x);
                     $previousValue = $x;
+                    if ($count == $length) {
+                        $semesters[$temp[0][2] ." ". $temp[0][3]] = $temp;;
+                    }
                 } else {
                     $count++;
                     array_push($temp, $x);
