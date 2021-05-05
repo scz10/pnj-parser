@@ -159,7 +159,7 @@ class PNJParser
         }
 
         $xpath = new DOMXPath($dom);
-        if ($xpath->query('//*[@id="message"]/ul/li')->length == 0){
+        if ($xpath->query('//*[@id="accordion"]/div/form/p[3]/input')->length == 0){
             return true;
         } else {
             return false;
