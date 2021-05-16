@@ -9,6 +9,15 @@ Parsing data dari portal mahasiswa PNJ
 require_once('src/PNJParser.php');
 $Parser = new PNJParser('NIM', 'password');
 ```
+### ***Forget password***
+```php
+//Use NIM and Password your Student account
+
+require_once('src/PNJParser.php');
+$Parser = new PNJParser('name', 'nim', 'birthdate');
+// birthdate must be yyyy-mm-dd format
+```
+
 ### *** Get biodata data ***
 
 ```php

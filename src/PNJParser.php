@@ -16,13 +16,16 @@ class PNJParser
 {
     private $username;
     private $password;
+    private $name;
+    private $birthdate;
 
     protected $curlHandle;
     public $_siteTargets = [
         'loginUrl' => 'https://old.pnj.ac.id/mahasiswa.html',
         'nilaiUrl' => 'https://old.pnj.ac.id/mahasiswa/nilai.html',
         'kompenUrl' => 'https://old.pnj.ac.id/mahasiswa/kompen.html',
-        'logoutUrl' => 'https://old.pnj.ac.id/mahasiswa/logout.html'
+        'logoutUrl' => 'https://old.pnj.ac.id/mahasiswa/logout.html',
+        'passwordUrl' => 'https://old.pnj.ac.id/mahasiswa/permohonan_password.html'
     ];
 
     public $isLoggedIn = false;
@@ -41,13 +44,22 @@ class PNJParser
 
     /**
 	* The Constructor
-	* this class will make login request to PNJ Academic portal
+	* this constructor will make login request to PNJ Academic portal
 	*
 	* @param string $username
 	* @param string $password
 	*/
+    public function __construct()
+    {
+        $arguments = func_get_args();
+        $numberOfArguments = func_num_args();
 
-    public function __construct($username, $password)
+        if (method_exists($this, $function = '__construct'.$numberOfArguments)) {
+            call_user_func_array(array($this, $function), $arguments);
+        }
+    }
+
+    public function __construct2($username, $password)
     {
         if (PARSER_DEBUG == true) error_reporting(E_ALL);
         $this->username = $username;
@@ -55,6 +67,28 @@ class PNJParser
         $this->curlHandle = curl_init();
         $this->setupCurl();
         $this->login($this->username, $this->password);
+    }
+
+    /**
+	* The Constructor
+	* this constructor will make forget password request to PNJ Academic portal
+	*
+	* @param string $name
+	* @param string $username
+    * @param string $birthdate
+	*/
+    public function __construct3($name, $username, $birthdate)
+    {
+        if (PARSER_DEBUG == true) error_reporting(E_ALL);
+        $this->username = $username;
+        $this->name = $name;
+        $this->$birthdate = $birthdate;
+        $this->curlHandle = curl_init();
+        $this->setupCurl();
+        $result = $this->forgetPassword($this->name, $this->username, $this->$birthdate);
+        $response['status'] = true;
+        $response['data'] = $result;
+        echo json_encode($response);
     }
 
     /**
@@ -112,6 +146,57 @@ class PNJParser
     /**
      * Login to PNJ academic portal.
      */
+    private function forgetPassword($name, $username, $birthdate)
+    {
+        //Just to Get Cookies
+        curl_setopt($this->curlHandle, CURLOPT_URL, $this->_siteTargets['passwordUrl']);
+        $this->curlSetGet();
+        $this->exec();
+
+        //Sending login Info
+        $params = array(
+            "f_nama={$name}",
+            "f_nim={$username}",
+            "f_tgllahir={$birthdate}",
+            'submit=Tampilkan Password'
+        );
+        $params = implode('&', $params);
+        $this->curlSetPost();
+        curl_setopt($this->curlHandle, CURLOPT_URL, $this->_siteTargets['passwordUrl']);
+        curl_setopt($this->curlHandle, CURLOPT_REFERER, $this->_siteTargets['passwordUrl']);
+        curl_setopt($this->curlHandle, CURLOPT_POSTFIELDS, $params);
+        $result = $this->exec();
+
+        $result = $this->parseForgetPassword($result);
+        return $result;
+    }
+        /**
+     * To check login status
+     * 
+     * @param login result $html
+     * @return boolean
+     */
+    private function parseForgetPassword($html){
+        
+        $dom = new DOMDocument();
+        libxml_use_internal_errors(true);
+        if (PARSER_DEBUG) {
+            $dom->loadHTML($html);
+        } else {
+            @$dom->loadHTML($html);
+        }
+
+        $xpath = new DOMXPath($dom);
+        if ($xpath->query('//*[@id="artikel_tengah"]/big/b/text()')->length == 0){
+            return "Data tidak ditemukan";
+        } else {
+            return $xpath->query('//*[@id="artikel_tengah"]/big/b/text()')->item(0)->nodeValue;
+        }
+        
+    }
+    /**
+     * Login to PNJ academic portal.
+     */
     private function login($username, $password)
     {
         //Just to Get Cookies
@@ -165,6 +250,23 @@ class PNJParser
             return false;
         }
         
+    }
+    /**
+     * function to navigate to biodata url
+     * 
+     * @return array
+     */
+    public function getLupaPassword()
+    {
+
+        curl_setopt($this->curlHandle, CURLOPT_URL, $this->_siteTargets['passwordUrl']);
+
+        $this->curlSetGet();
+
+        $result = $this->exec();
+        $result = $this->getParseDataMahasiswa($result);
+
+        return $result;
     }
     /**
      * function to navigate to biodata url
