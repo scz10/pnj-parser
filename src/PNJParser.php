@@ -29,6 +29,7 @@ class PNJParser
     ];
 
     public $isLoggedIn = false;
+    public $http_code = null;
 
     public $_defaultHeaders = array(
         'POST /mahasiswa.html HTTP/1.1',
@@ -99,16 +100,9 @@ class PNJParser
     public function exec()
     {
         $result = curl_exec($this->curlHandle);
-        if (PARSER_DEBUG == true) {
-            $http_code = curl_getinfo($this->curlHandle, CURLINFO_HTTP_CODE);
-            print_r($result);
-
-            if ($http_code != 200) {
-                echo 'Something went wrong, not return 200';
-                exit;
-            }
-        }
-        return $result;
+        $http_code = curl_getinfo($this->curlHandle, CURLINFO_HTTP_CODE);
+        
+        return array($result,$http_code) ;
     }
 
     /**
@@ -221,9 +215,9 @@ class PNJParser
 
         $this->curlSetGet();
 
-        $result = $this->exec();
+        list($result, $http_code) = $this->exec();
         $result = $this->checkLogin($result);
-
+        $this->http_code = $http_code;
         $this->isLoggedIn = $result;
     }
 
