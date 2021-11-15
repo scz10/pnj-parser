@@ -25,7 +25,9 @@ class PNJParser
         'nilaiUrl' => 'https://old.pnj.ac.id/mahasiswa/nilai.html',
         'kompenUrl' => 'https://old.pnj.ac.id/mahasiswa/kompen.html',
         'logoutUrl' => 'https://old.pnj.ac.id/mahasiswa/logout.html',
-        'passwordUrl' => 'https://old.pnj.ac.id/mahasiswa/permohonan_password.html'
+        'passwordUrl' => 'https://old.pnj.ac.id/mahasiswa/permohonan_password.html',
+        'edomUrl' => 'https://old.pnj.ac.id/mahasiswa/edom.html',
+        'edomPrint' => 'https://old.pnj.ac.id/mahasiswa/edom_print.html'
     ];
 
     public $isLoggedIn = false;
@@ -308,6 +310,118 @@ class PNJParser
         $data = [];
         foreach($xpath->query('//*[@id="artikel_tengah"]/div[2]/text()') as $a){
             array_push($data, $a->nodeValue);
+        }
+
+        return $data;
+    }
+
+    /**
+     * function to navigate to auto edom
+     * 
+     * @return string element page kompen url
+     */
+    public function sendEdom($nilai=null)
+    {
+        if (!$this->isLoggedIn) $this->login($this->username, $this->password);
+
+        curl_setopt($this->curlHandle, CURLOPT_URL, $this->_siteTargets['edomUrl']);
+
+        $this->curlSetGet();
+
+        $result = $this->exec();
+        $result = $this->getParseEdomList($result);
+        $this->postSendEdom(4,$result);
+        $result = $this->downloadEdomPDF();
+
+        
+        return $result;
+    }
+
+    /**
+     * function to navigate to auto edom
+     * 
+     * @return string element page kompen url
+     */
+    public function downloadEdomPDF()
+    {
+        if (!$this->isLoggedIn) $this->login($this->username, $this->password);
+
+        curl_setopt($this->curlHandle, CURLOPT_URL, $this->_siteTargets['edomPrint']);
+
+        $this->curlSetGet();
+
+        $result = $this->exec();
+
+        return $result;
+    }
+
+    /**
+     * function to navigate to auto edom
+     * 
+     * @return string element page kompen url
+     */
+    private function postSendEdom($nilai, $datas)
+    {
+        if (!$this->isLoggedIn) $this->login($this->username, $this->password);
+        foreach ($datas as $data) {
+                if ($data[6] != null) {
+                    $params = array();
+                    for ($i=1; $i <= 28; $i++) { 
+                        array_push($params, "q{$i}={$nilai}");
+                        if($i === 28){
+                            array_push($params,'kirim_data=Kirimkan Data');
+                        }
+                    }
+                    $params = implode('&', $params);
+
+                    $this->curlSetPost();
+                    curl_setopt($this->curlHandle, CURLOPT_URL, $data[6]);
+                    curl_setopt($this->curlHandle, CURLOPT_REFERER, $data[6]);
+                    curl_setopt($this->curlHandle, CURLOPT_POSTFIELDS, $params);
+                    $this->exec();
+                }
+        }
+        
+    }
+
+    /**
+     * function to scrape data from kompen url
+     * 
+     * @param string $html
+     * @return array
+     */
+    private function getParseEdomList($html)
+    {
+        $dom = new DOMDocument();
+
+        if (PARSER_DEBUG) {
+            $dom->loadHTML($html);
+        } else {
+            @$dom->loadHTML($html);
+        }
+
+        $xpath = new DOMXPath($dom);
+
+        $rows = $xpath->query('//*[@id="artikel_tengah"]/div[2]/table/tbody/tr');
+        $data = [];
+        foreach ($rows as $row) {
+            $cells = $row->getElementsByTagName('td');
+            $cellData = [];
+            $cellCounter = 0;
+            foreach ($cells as $cell) {
+                $cellData[] = $cell->nodeValue;
+                $cellCounter++;
+                if ($cellCounter > 5){
+                    if ($cellData[5] !== '100 %'){
+                        foreach ($cell->getElementsByTagName('a') as $atag) {
+                             array_push($cellData, $atag->getAttribute('href'));
+                        }
+                    } else {
+                       array_push($cellData, null); 
+                    }
+                }
+            }
+            array_push($data, $cellData); 
         }
 
         return $data;
