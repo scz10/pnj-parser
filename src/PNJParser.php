@@ -100,9 +100,9 @@ class PNJParser
     public function exec()
     {
         $result = curl_exec($this->curlHandle);
-        $http_code = curl_getinfo($this->curlHandle, CURLINFO_HTTP_CODE);
+        $this->http_code = curl_getinfo($this->curlHandle, CURLINFO_HTTP_CODE);
         
-        return array($result,$http_code) ;
+        return $result;
     }
 
     /**
@@ -215,9 +215,8 @@ class PNJParser
 
         $this->curlSetGet();
 
-        list($result, $http_code) = $this->exec();
+        $result = $this->exec();
         $result = $this->checkLogin($result);
-        $this->http_code = $http_code;
         $this->isLoggedIn = $result;
     }
 
